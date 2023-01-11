@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -21,6 +23,20 @@ def register_view(request):
             messages.add_message(
                 request, constants.ERROR, 'All fields are required!'
                 )
+            return render(request, 'users/register.html')
+
+        regex_pass = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$')   
+        if not regex_pass.match(password):
+            messages.add_message(
+                    request, constants.ERROR, 'Password must have 1 upper case letter, 1 lower case letter, 1 number and min 8 characters' # noqa E501
+                    )
+            return render(request, 'users/register.html')
+            
+        regex_email = re.compile(r'^[^\s@<>\(\)[\]\.]+(?:\.[^\s@<>\(\)\[\]\.]+)*@\w+(?:[\.\-_]\w+)*$') # noqa E501
+        if not regex_email.match(email):
+            messages.add_message(
+                    request, constants.ERROR, 'Invalid E-mail, Type again!' 
+                    )
             return render(request, 'users/register.html')
 
         if password != confirm_password:
