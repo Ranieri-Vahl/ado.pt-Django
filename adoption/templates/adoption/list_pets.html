@@ -1,0 +1,102 @@
+{% load static %}
+<!doctype html>
+<html lang="en-US">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'users/css/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'publish/css/new_pet/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'publish/css/your_pets/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'adoption/css/styles.css' %}" rel="stylesheet">
+    </head>
+    <body>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2 bg-side sidebar">
+                    <h2>ADO.PT</h2>
+                    <hr>
+                </div>
+
+                <div class="col-md">
+                    <div class="wrapper">
+                        <div class="box width80">
+                            {% if messages %}
+                                <br>
+                                {% for message in messages %}
+                                    <div class="alert {{message.tags}}">
+                                        {{message}}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            <h3 class="font-purple">Adoption</h3>
+                            <hr>
+                            <form action=" {% url 'list_pets' %}" method="GET">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="text" placeholder="City..." value="" name="city" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <select class="form-select" name="dogbreed">
+                                            {% for dogbreed in dogbreeds %}
+                                                <option value="{{dogbreed.id}}">{{ dogbreed }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="submit" class="btn-custom-secondary" value="FILTER">
+                                    </div>
+                                </div>
+                            </form>
+                             <table class="table" cellpadding="20">
+                                <tr>
+                                    <th>Picture</th>
+                                    <th>Name</th>
+                                    <th>Dog Breed</th>
+                                    <th>Status</th>
+                                    <th>City</th>
+                                </tr>
+                                {% for pet in pets %}
+                                    <tr class="table-in-line">
+                                        <td width="20%">
+                                            <img width="40%" src="{{pet.picture.url}}">
+                                        </td>
+                                        <td>
+                                            {{pet.name}}
+                                        </td>
+                                        <td>
+                                            {{pet.dogbreed}}   
+                                        </td>
+                                        <td>
+                                            {% if pet.status == "F" %}
+                                                <span class="badge text-bg-primary">For Adoption</span>
+                                            {% elif pet.status == "A" %}
+                                                <span class="badge text-bg-success">Adopted</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{pet.city}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            
+                                
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

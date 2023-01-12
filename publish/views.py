@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Tag, DogBreed, Pet
+from django.contrib.messages import constants
+from django.shortcuts import redirect, render
+
+from .models import DogBreed, Pet, Tag
 
 
 @login_required
@@ -42,3 +45,29 @@ def new_pet(request):
             pet.tags.add(tag)
         
         pet.save()
+    return redirect('/publish/your_pets')
+
+
+def your_pets(request):
+    if request.method == "GET":
+        pets = Pet.objects.filter(user=request.user)
+        return render(request, 'publish/your_pets.html', context={
+            'pets': pets,
+        })
+
+
+def remove_pet(request, id):
+    pet = Pet.objects.get(id=id)
+
+    if not pet.user == request.user:
+        messages.add_message(
+            request, constants.ERROR, 'This pet is not yours!'
+        )
+        return redirect('/publish/your_pets')
+    
+    pet.delete()
+
+    messages.add_message(
+        request, constants.SUCCESS, 'Pet removed with success'
+        )
+    return redirect('/publish/your_pets')
