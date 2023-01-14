@@ -36,13 +36,13 @@
                             <form action=" {% url 'list_pets' %}" method="GET">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input type="text" placeholder="City..." value="" name="city" class="form-control">
+                                        <input type="text" placeholder="City..." value="{% if city %}{{city}}{% endif %}" name="city" class="form-control">
                                     </div>
 
                                     <div class="col-md-4">
                                         <select class="form-select" name="dogbreed">
                                             {% for dogbreed in dogbreeds %}
-                                                <option value="{{dogbreed.id}}">{{ dogbreed }}</option>
+                                                <option {% if breed.id == dogbreed.id %} selected {% endif %} value="{{dogbreed.id}}">{{ dogbreed }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>

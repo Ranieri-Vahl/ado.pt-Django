@@ -10,7 +10,7 @@ from .models import DogBreed, Pet, Tag
 def new_pet(request):
     if request.method == "GET":
         tags = Tag.objects.all()
-        dogbreeds = DogBreed.objects.all()
+        dogbreeds = DogBreed.objects.all().exclude(dogbreed='All DogBreeds')
         return render(request, 'publish/new_pet.html', context={
             'tags': tags,
             'dogbreeds': dogbreeds,
