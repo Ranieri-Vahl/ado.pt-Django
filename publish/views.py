@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import constants
 from django.shortcuts import redirect, render
-
+from adoption.models import RequestAdoption
 from .models import DogBreed, Pet, Tag
 
 
@@ -48,6 +48,7 @@ def new_pet(request):
     return redirect('/publish/your_pets')
 
 
+@login_required
 def your_pets(request):
     if request.method == "GET":
         pets = Pet.objects.filter(user=request.user)
@@ -56,6 +57,7 @@ def your_pets(request):
         })
 
 
+@login_required
 def remove_pet(request, id):
     pet = Pet.objects.get(id=id)
 
@@ -71,3 +73,23 @@ def remove_pet(request, id):
         request, constants.SUCCESS, 'Pet removed with success'
         )
     return redirect('/publish/your_pets')
+
+
+@login_required
+def see_pet(request, id):
+    if request.method == "GET":
+        pet = Pet.objects.get(id=id)
+        return render(request, 'publish/see_pet.html', context={
+            'pet': pet,
+        })
+
+
+@login_required
+def see_request_adoption(request):
+    if request.method == "GET":
+        request_adoption = RequestAdoption.objects.filter(
+            user=request.user, status="WA"
+            )
+        return render(request, 'publish/see_request_adoption.html', context={
+            'requests': request_adoption
+        })

@@ -1,3 +1,18 @@
+from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
+from publish.models import Pet
+
+
+class RequestAdoption(models.Model):
+    choices_status = (
+        ('WA', 'Waiting for Approval'),
+        ('A', 'Approved'),
+        ('R', 'Refused'),
+    )
+    pet = models.ForeignKey(Pet, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    date = models.DateTimeField()
+    status = models.CharField(
+        max_length=2, choices=choices_status, default='WA'
+        )
