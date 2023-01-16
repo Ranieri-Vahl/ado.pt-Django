@@ -54,7 +54,7 @@ def register_view(request):
             messages.add_message(
                 request, constants.SUCCESS, 'Registered with sucess!'
                 )
-            return render(request, 'users/register.html')
+            return redirect('login')
 
         except User.DoesNotExist:
             messages.add_message(

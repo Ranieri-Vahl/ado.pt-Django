@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import constants
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 
 from publish.models import DogBreed, Pet
@@ -55,3 +56,34 @@ def request_adoption(request, pet_id):
         request, constants.SUCCESS, 'Successful adoption request'
         )
     return redirect('/adoption')
+
+
+@login_required
+def process_request_adoption(request, id_request):
+    status = request.GET.get('status')
+    request_adoption = RequestAdoption.objects.get(id=id_request)
+    pet = Pet.objects.get(id=request_adoption.pet.id)
+
+    if status == "A":
+        string = 'Hello, your adoption was approved!'
+        request_adoption.status = "A"
+        pet.status = "A"
+    if status == "R":
+        string = 'Hello, your adoption was refused!'
+        request_adoption.status = "R"
+
+    request_adoption.save()
+    pet.save()
+
+    send_mail(
+        'Your adoption has been processed',
+        string,
+        'devranieri@gmail.com',
+        [request_adoption.user.email,]
+    )
+
+    messages.add_message(
+        request, constants.SUCCESS, 
+        'Adoption application successfully processed'
+        )
+    return redirect('/publish/see_request_adoption/')
