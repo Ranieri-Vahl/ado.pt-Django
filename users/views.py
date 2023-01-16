@@ -7,6 +7,11 @@ from django.contrib.messages import constants
 from django.shortcuts import redirect, render
 
 
+def home(request):
+    if request.method == "GET":
+        return redirect('adoption/')
+
+
 def register_view(request):
     if request.user.is_authenticated:  
         return redirect('publish/new_pet')

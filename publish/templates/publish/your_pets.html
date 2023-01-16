@@ -22,7 +22,7 @@
                     <a class="btn btn-primary col-12 items-side-bar" href="/publish/new_pet/">Publish Pet</a>
                     <a class="btn btn-info col-12 items-side-bar" href="/publish/your_pets/">Your pets</a>
                     <a class="btn btn-warning col-12 items-side-bar" href="/publish/see_request_adoption/">Pet Requests</a>
-                    <a class="btn btn-danger col-12 items-side-bar" href="#">Dashboard</a>  			        
+                    <a class="btn btn-danger col-12 items-side-bar" href="/publish/dashboard/">Dashboard</a>  			        
                     <a href=" {% url 'logout' %}" class="btn btn-danger bottom items-side-bar-logout">Logout</a>                   
                     
                 </div>
@@ -52,7 +52,7 @@
                                 {% for pet in pets %}
                                     <tr class="table-in-line">
                                         <td width="20%">
-                                            <img width="40%" src="{{pet.picture.url}}">
+                                            <a href="{% url 'see_pet' pet.id %}"><img width="40%" src="{{pet.picture.url}}"></a>
                                         </td>
                                         <td>
                                             {{pet.name}}

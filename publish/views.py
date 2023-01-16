@@ -1,12 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import constants
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
+
 from adoption.models import RequestAdoption
+
 from .models import DogBreed, Pet, Tag
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def new_pet(request):
     if request.method == "GET":
         tags = Tag.objects.all()
@@ -48,7 +52,7 @@ def new_pet(request):
     return redirect('/publish/your_pets')
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def your_pets(request):
     if request.method == "GET":
         pets = Pet.objects.filter(user=request.user)
@@ -57,7 +61,7 @@ def your_pets(request):
         })
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def remove_pet(request, id):
     pet = Pet.objects.get(id=id)
 
@@ -75,7 +79,7 @@ def remove_pet(request, id):
     return redirect('/publish/your_pets')
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def see_pet(request, id):
     if request.method == "GET":
         pet = Pet.objects.get(id=id)
@@ -84,12 +88,35 @@ def see_pet(request, id):
         })
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def see_request_adoption(request):
     if request.method == "GET":
         request_adoption = RequestAdoption.objects.filter(
-            user=request.user, status="WA"
+            pet__user=request.user, status="WA"
             )
         return render(request, 'publish/see_request_adoption.html', context={
             'requests': request_adoption
         })
+
+
+def dashboard(request):
+    if request.method == "GET":
+        return render(request, 'publish/dashboard.html')
+
+
+@csrf_exempt
+def api_adoptions_by_breed(request):
+    breeds = DogBreed.objects.all()
+
+    qty_adoptions = []
+    for breed in breeds:
+        adoptions = RequestAdoption.objects.filter(pet__dogbreed=breed).count()
+        qty_adoptions.append(adoptions)
+
+    breeds = [breed.dogbreed for breed in breeds]
+    data = {
+        'qty_adoptions': qty_adoptions,
+        'labels': breeds,
+    }
+
+    return JsonResponse(data)

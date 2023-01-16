@@ -11,7 +11,7 @@ from publish.models import DogBreed, Pet
 from .models import RequestAdoption
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def list_pets(request):
     pets = Pet.objects.filter(status="F")
     dogbreed = DogBreed.objects.all()
@@ -35,7 +35,7 @@ def list_pets(request):
     })
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def request_adoption(request, pet_id):
     pet = Pet.objects.filter(id=pet_id, status="F")
 
@@ -58,7 +58,7 @@ def request_adoption(request, pet_id):
     return redirect('/adoption')
 
 
-@login_required
+@login_required(login_url='/auth/login/')
 def process_request_adoption(request, id_request):
     status = request.GET.get('status')
     request_adoption = RequestAdoption.objects.get(id=id_request)

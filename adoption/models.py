@@ -16,3 +16,6 @@ class RequestAdoption(models.Model):
     status = models.CharField(
         max_length=2, choices=choices_status, default='WA'
         )
+     
+    def __str__(self):
+        return self.pet.name
