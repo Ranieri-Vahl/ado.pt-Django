@@ -1,10 +1,11 @@
-import re
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.messages import constants
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from .forms.register_form import RegisterForm
+from django.http import Http404
 
 
 def home(request):
@@ -13,59 +14,32 @@ def home(request):
 
 
 def register_view(request):
-    if request.user.is_authenticated:  
-        return redirect('publish/new_pet')
+    register_form_data = request.session.get('register_form_data', None)
+    form = RegisterForm(register_form_data)
+    return render(request, 'users/register.html', context={
+        'form': form,
+        'form_action': reverse('register_create'),
+    })
 
-    if request.method == 'GET':
-        return render(request, 'users/register.html')
-    elif request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
 
-        if len(name.strip()) == 0 or len(email.strip()) == 0 or len(password.strip()) == 0: # noqa E501
-            messages.add_message(
-                request, constants.ERROR, 'All fields are required!'
-                )
-            return render(request, 'users/register.html')
+def register_create(request):
+    if not request.POST:
+        raise Http404
+    POST = request.POST
+    request.session['register_form_data'] = POST
+    form = RegisterForm(POST)
 
-        regex_pass = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$')   
-        if not regex_pass.match(password):
-            messages.add_message(
-                    request, constants.ERROR, 'Password must have 1 upper case letter, 1 lower case letter, 1 number and min 8 characters' # noqa E501
-                    )
-            return render(request, 'users/register.html')
-            
-        regex_email = re.compile(r'^[^\s@<>\(\)[\]\.]+(?:\.[^\s@<>\(\)\[\]\.]+)*@\w+(?:[\.\-_]\w+)*$') # noqa E501
-        if not regex_email.match(email):
-            messages.add_message(
-                    request, constants.ERROR, 'Invalid E-mail, Type again!' 
-                    )
-            return render(request, 'users/register.html')
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.set_password(user.password)
+        user.save()
+        messages.add_message(
+            request, constants.SUCCESS, 'User registered with sucess!, Please Log In.' # noqa E501
+            ) 
+        del (request.session['register_form_data'])
+        return redirect('login')
 
-        if password != confirm_password:
-            messages.add_message(
-                request, constants.ERROR, 'The passwords must be equal!'
-                )
-            return render(request, 'users/register.html')
-
-        try:
-            User.objects.create_user(
-                username=name,
-                email=email,
-                password=password,
-            )
-            messages.add_message(
-                request, constants.SUCCESS, 'Registered with sucess!'
-                )
-            return redirect('login')
-
-        except User.DoesNotExist:
-            messages.add_message(
-                request, constants.ERROR, 'Intern error'
-                )            
-            return render(request, 'users/register.html')
+    return redirect('register')
 
 
 def login_view(request):

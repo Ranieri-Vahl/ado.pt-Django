@@ -62,8 +62,8 @@ def your_pets(request):
 
 
 @login_required(login_url='/auth/login/')
-def remove_pet(request, id):
-    pet = Pet.objects.get(id=id)
+def remove_pet(request, id_remove):
+    pet = Pet.objects.get(id=id_remove)
 
     if not pet.user == request.user:
         messages.add_message(

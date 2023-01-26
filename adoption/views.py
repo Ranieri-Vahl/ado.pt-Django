@@ -62,7 +62,7 @@ def request_adoption(request, pet_id):
 def process_request_adoption(request, id_request):
     status = request.GET.get('status')
     request_adoption = RequestAdoption.objects.get(id=id_request)
-    pet = Pet.objects.get(id=request_adoption.pet.id)
+    pet = Pet.objects.get(id=request_adoption.pet__id)
 
     if status == "A":
         string = 'Hello, your adoption was approved!'

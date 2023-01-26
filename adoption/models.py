@@ -10,7 +10,7 @@ class RequestAdoption(models.Model):
         ('A', 'Approved'),
         ('R', 'Refused'),
     )
-    pet = models.ForeignKey(Pet, on_delete=models.DO_NOTHING)
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     date = models.DateTimeField()
     status = models.CharField(
