@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -37,19 +38,25 @@ def list_pets(request):
 
 @login_required(login_url='/auth/login/')
 def request_adoption(request, pet_id):
-    pet = Pet.objects.filter(id=pet_id, status="F")
-
-    if not pet.exists():
+    try:
+        pet = Pet.objects.get(id=pet_id, status="F")
+    except ObjectDoesNotExist:
         messages.add_message(
             request, constants.ERROR, 'This pet is already adopted'
             )
         return redirect('/adoption')
 
     request_to_adopt = RequestAdoption(
-        pet=pet.first(),
+        pet=pet,
         user=request.user,
         date=datetime.now()
     )
+
+    if pet.user == request_to_adopt.user:
+        messages.add_message(
+            request, constants.ERROR, 'This pet is yours! Request denied'
+            )
+        return redirect('/adoption')
 
     request_to_adopt.save()
     messages.add_message(
@@ -62,7 +69,7 @@ def request_adoption(request, pet_id):
 def process_request_adoption(request, id_request):
     status = request.GET.get('status')
     request_adoption = RequestAdoption.objects.get(id=id_request)
-    pet = Pet.objects.get(id=request_adoption.pet__id)
+    pet = Pet.objects.get(id=request_adoption.pet.id)
 
     if status == "A":
         string = 'Hello, your adoption was approved!'

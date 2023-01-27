@@ -2,10 +2,12 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.messages import constants
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+
+from .forms.login_form import LoginForm
 from .forms.register_form import RegisterForm
-from django.http import Http404
 
 
 def home(request):
@@ -38,34 +40,44 @@ def register_create(request):
             ) 
         del (request.session['register_form_data'])
         return redirect('login')
-
+    else:
+        messages.add_message(
+            request, constants.ERROR, 'There are errors in the form! Please fix them' # noqa E501
+            ) 
     return redirect('register')
 
 
 def login_view(request):
-    if request.user.is_authenticated:  
-        return redirect('publish/new_pet')
+    form = LoginForm()
+    return render(request, 'users/login.html', context={
+        'form': form,
+        'form_action': reverse('login_create'),
+    })
 
-    if request.method == "GET":
-        return render(request, 'users/login.html')
-    elif request.method == "POST":
-        name = request.POST.get('name')
-        password = request.POST.get('password')
 
+def login_create(request):
+    if not request.POST:
+        raise Http404
+    form = LoginForm(request.POST)
+    if form.is_valid():
         user = authenticate(
-            username=name,
-            password=password,
+            username=form.cleaned_data.get('name'),
+            password=form.cleaned_data.get('password'),
         )
         if user is not None:
             login(request, user)
-            return redirect('/publish/new_pet')
+            return redirect('list_pets')
         else:
             messages.add_message(
-                request, constants.ERROR, 'User or password are invalid!'
+                request, constants.ERROR, 'Name or password are invalid!'
                 )              
-            return render(request, 'users/login.html')
+            return redirect('login')
+    else:
+        messages.add_message(
+            request, constants.ERROR, 'Name or password are invalid!'
+            ) 
 
 
 def logout_view(request):
     logout(request)
-    return redirect('/auth/login')
+    return redirect('login')

@@ -30,17 +30,18 @@
                         <h2>LogIn</h2>
                         <p>Good to have you back.</p>
                         <hr>
-                        <form action=" {% url 'login' %} " method="POST">{% csrf_token %}
-                            <span>Name:</span>
-                            <input type="text" class="form-control" placeholder="Type your name..." name="name">
-                            <br>
-                           
-                            <span>Password:</span>
-                            <input type="password" class="form-control" placeholder="Type your password..." name="password">
+                        <form action="{{ form_action }}" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                                {% for field in form %}
+                                    <div class="margin-form">
+                                        <label for="{{ field.id_for_label }}" class="margin-label">{{ field.label }}</label>
+                                        {{field}}
+                                        {{ field.errors }}
+                                    </div>
+                                {% endfor %}
                                 
-
                             <input type="submit" value="SEND" class="btn-custom-primary">
-                        
+        
                             <a href=" {% url 'register' %} " class="link-float">Register an user</a>
                         </form>
                     </div>
