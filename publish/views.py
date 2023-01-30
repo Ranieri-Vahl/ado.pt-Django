@@ -1,55 +1,76 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import constants
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from adoption.models import RequestAdoption
 
+from .forms.new_pet_form import NewPetForm
 from .models import DogBreed, Pet, Tag
 
 
 @login_required(login_url='/auth/login/')
 def new_pet(request):
-    if request.method == "GET":
-        tags = Tag.objects.all()
-        dogbreeds = DogBreed.objects.all().exclude(dogbreed='All DogBreeds')
-        return render(request, 'publish/new_pet.html', context={
-            'tags': tags,
-            'dogbreeds': dogbreeds,
-        })
-    elif request.method == "POST":
-        picture = request.FILES.get('picture')
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        state = request.POST.get('state')
-        city = request.POST.get('city')
-        phone = request.POST.get('phone_number')
-        tags = request.POST.getlist('tags')
-        dogbreeds = request.POST.get('dogbreeds')
+    newpet_form_data = request.session.get('newpet_form_data', None)
+    form = NewPetForm(newpet_form_data)
+    tags = Tag.objects.all()
+    dogbreeds = DogBreed.objects.all().exclude(dogbreed='All DogBreeds')
+    return render(request, 'publish/new_pet.html', context={
+        'form': form,
+        'tags': tags,
+        'dogbreeds': dogbreeds,
+        'form_action': reverse('new_pet_create'),
+    })
 
-        # validar os dados
 
-        pet = Pet(
-            user=request.user,
-            picture=picture,
-            name=name,
-            description=description,
-            state=state,
-            city=city,
-            phone_number=phone,
-            dogbreed_id=dogbreeds
+@login_required(login_url='/auth/login/')
+def new_pet_create(request):
+    if not request.POST:
+        raise Http404
+    POST = request.POST
+    request.session['newpet_form_data'] = POST
+    form = NewPetForm(
+        data=request.POST,
+        files=request.FILES,
         )
 
-        pet.save()
+    tags = request.POST.getlist('tags')
+    dogbreeds = request.POST.get('dogbreeds')
 
+    if form.is_valid():
+        petform = form.save(commit=False) 
+        phone = request.POST.get('phone_number')
+        pet = Pet(            
+            user=request.user,
+            picture=petform.picture,
+            name=petform.name,
+            description=petform.description,
+            state=petform.state,
+            city=petform.city,
+            phone_number=phone,
+            dogbreed_id=dogbreeds,
+        )    
+        pet.save()
+        
         for tag_id in tags:
             tag = Tag.objects.get(id=tag_id)
             pet.tags.add(tag)
-        
+
+        del (request.session['newpet_form_data'])
         pet.save()
-    return redirect('/publish/your_pets')
+
+        messages.add_message(
+            request, constants.SUCCESS, 'New pet Registered with success!'
+        )
+        return redirect('your_pets')
+    else:
+        messages.add_message(
+            request, constants.ERROR, 'There are errors in the form! Please fix them' # noqa E501
+            )         
+    return redirect('new_pet')
 
 
 @login_required(login_url='/auth/login/')

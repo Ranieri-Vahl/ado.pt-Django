@@ -36,7 +36,7 @@
                                 <hr>
                             </div>
                             <div class="body-box">
-                                <form action="{% url 'new_pet' %}" method="POST" enctype='multipart/form-data'>{% csrf_token %}
+                                <form action="{{ form_action }}" method="POST" enctype="multipart/form-data">
                                     {% if messages %}
                                         <br>
                                         {% for message in messages %}
@@ -45,38 +45,22 @@
                                             </div>
                                         {% endfor %}
                                     {% endif %}
-                                    <input type="file" name="picture" class="form-control">
-                                    <br>
-                                    <span>Name:<span>
-                                    <input type="text" class="form-control" name="name" placeholder="Type the pet name...">
-                                    <br>
-                                    <span>Description:<span>
-                                    <textarea class="form-control" name="description" placeholder="Description..."></textarea>
-                                    <br>
-
-                                    <div class="row">
-                                        <div class="col-md">
-                                            <span>State:</span>
-                                            <input type="text" placeholder="Type the pet state..." name="state" class="form-control">
+                                    {% csrf_token %}
+                                    {% for field in form %}
+                                        <div class="margin-form">
+                                            <label for="{{ field.id_for_label }}" class="margin-label">{{ field.label }}</label>
+                                            {{field}}
+                                            {{ field.errors }}
                                         </div>
-
-                                        <div class="col-md">
-                                            <span>City:</span>
-                                            <input type="text" placeholder="Type the pet city..." name="city" class="form-control">
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <span>Phone number:</span>
-                                    <input type="text" placeholder="Type your phone number..." name="phone_number" class="form-control">
-                                    <br>
-                                    <span>Tags:</span>
+                                    {% endfor %}
+                                    <span class="margin-label">Tags:</span>
                                     <select name="tags" multiple class="form-select">
                                         {% for tag in tags %}
                                             <option value="{{tag.id}}">{{ tag }}</option>
                                         {% endfor %}
                                     </select>
-                                    <br>
-                                    </span>Dog Breed:</span>
+                                    
+                                    <span class="margin-label">Dog Breed:</span>
 
                                     <select name="dogbreeds" class="form-select">
                                         {% for dogbreed in dogbreeds %}
